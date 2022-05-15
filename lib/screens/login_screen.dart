@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,9 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: Container(
+    return Scaffold(
+      body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -155,10 +153,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             } on FirebaseAuthException catch (e) {
                               if (e.code == 'user-not-found') {
-                                Fluttertoast
+                                print("no");
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                  content: Text("Invalid email")
+                                ));
+                                
                               } else if (e.code == 'wrong-password') {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                  content: Text("Invalid password.")
+                                  content: Text("Invalid password")
                                 ));
                               }
                             }
