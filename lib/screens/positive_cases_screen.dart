@@ -1,17 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ApproveScreen extends StatefulWidget {
-  const ApproveScreen({ Key? key }) : super(key: key);
+class PositiveCasesScreen extends StatefulWidget {
+  const PositiveCasesScreen({ Key? key }) : super(key: key);
 
   @override
-  State<ApproveScreen> createState() => _ApproveScreenState();
+  State<PositiveCasesScreen> createState() => _PositiveCasesScreenState();
 }
 
-class _ApproveScreenState extends State<ApproveScreen> {
-  Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection('establishments')
-    .where('isApproved', isEqualTo: false);
+class _PositiveCasesScreenState extends State<PositiveCasesScreen> {
+  Query<Map<String, dynamic>> queryPositive = FirebaseFirestore.instance.collection('users')
+    .where("covidStatus", isEqualTo: 1);
 
+  List<String> vaccinationStatuses = [
+    "Fully vaccinated with booster shot",
+    "Fully vaccinated without booster shot",
+    "One dose only",
+    "Not yet vaccinated"
+  ];
+  
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -19,19 +26,19 @@ class _ApproveScreenState extends State<ApproveScreen> {
         children: [
           const Padding(padding: EdgeInsets.all(20)),
           const Text(
-            "Establishments pending approval",
+            "Current COVID-19 Positive Cases",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold
-            ),
+            )
           ),
           const Padding(padding: EdgeInsets.symmetric(vertical: 10)),
           StreamBuilder<QuerySnapshot>(
-            stream: query.snapshots(),
+            stream: queryPositive.snapshots(),
             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
               if(snapshot.hasData) {
-                if(snapshot.data!.docs.isEmpty) return const Text("No establishments pending approval.");
-                
+                if(snapshot.data!.docs.isEmpty) return const Text("No current COVID-19 positive individuals.");
+
                 return ListView.builder(
                   shrinkWrap: true,
                   itemCount: snapshot.data!.docs.length,
@@ -46,7 +53,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Establishment Name: " + snapshot.data!.docs[index]["name"]
+                            "Name: " + snapshot.data!.docs[index]["name"]
                           ),
                           Text(
                             "Mobile Number: " + snapshot.data!.docs[index]["number"]
@@ -54,14 +61,17 @@ class _ApproveScreenState extends State<ApproveScreen> {
                           Text(
                             "Address: " + snapshot.data!.docs[index]["barangay"] + ", " + snapshot.data!.docs[index]["municipality"]
                           ),
+                          Text(
+                            "Vaccination Status: " + vaccinationStatuses[snapshot.data!.docs[index]["vaccinationStatus"]]
+                          ),
                           const Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                           Center(
                             child: ElevatedButton(
                               onPressed: () {
-                                updateApprovalStatus(snapshot.data!.docs[index].id);
+                                updateCovidStatus(snapshot.data!.docs[index].id);
                               },
                               child: const Text(
-                                "APPROVE",
+                                "REMOVE",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold
                                   )
@@ -78,25 +88,24 @@ class _ApproveScreenState extends State<ApproveScreen> {
                         ],
                       )
                     );
-                  },
+                  }
                 );
               }
 
               return const CircularProgressIndicator();
             },
-          ),
-          const Spacer(),
+          )
         ],
-      ),
+      )
     );
   }
 
-  updateApprovalStatus(String id) async {
+  updateCovidStatus(String id) async {
     await FirebaseFirestore.instance
-      .collection('establishments')
+      .collection('users')
       .doc(id)
       .update({
-        "isApproved": true
+        "covidStatus": 0
       });
   }
 }

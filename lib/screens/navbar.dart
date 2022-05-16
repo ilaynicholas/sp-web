@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sp_web/screens/approve_screen.dart';
 import 'package:sp_web/screens/login_screen.dart';
+import 'package:sp_web/screens/positive_cases_screen.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({ Key? key }) : super(key: key);
@@ -15,8 +16,11 @@ class _NavbarState extends State<Navbar> {
 
   int _selectedIndex = 0;
 
+  TextStyle selectedStyle = const TextStyle(color: Colors.white, decoration: TextDecoration.underline);
+  TextStyle unselectedStyle = const TextStyle(color: Colors.white);
+
   static const List<Widget> _widgetOptions = <Widget>[
-    Text("0"),
+    PositiveCasesScreen(),
     Text("1"),
     ApproveScreen()
   ];
@@ -51,19 +55,28 @@ class _NavbarState extends State<Navbar> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextButton(
-              child: const Text("View Dashboard", style: TextStyle(color: Colors.white)),
+              child: Text(
+                "View Positive Cases",
+                style: _selectedIndex == 0 ? selectedStyle : unselectedStyle
+              ),
               onPressed: () {
                 _onItemTapped(0);
               },
             ),
             TextButton(
-              child: const Text("Search Database", style: TextStyle(color: Colors.white)),
+              child: Text(
+                "Search Database",
+                style: _selectedIndex == 1 ? selectedStyle : unselectedStyle
+              ),
               onPressed: () {
                 _onItemTapped(1);
               },
             ),
             TextButton(
-              child: const Text("Approve Establishments", style: TextStyle(color: Colors.white)),
+              child: Text(
+                "Approve Establishments",
+                style: _selectedIndex == 2 ? selectedStyle : unselectedStyle
+              ),
               onPressed: () {
                 _onItemTapped(2);
               },
