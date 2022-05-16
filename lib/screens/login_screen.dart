@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'navbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({ Key? key }) : super(key: key);
@@ -150,6 +151,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               await auth.signInWithEmailAndPassword(
                                 email: emailController.text,
                                 password: passwordController.text
+                              );
+
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => const Navbar())
                               );
                             } on FirebaseAuthException catch (e) {
                               if (e.code == 'user-not-found') {
