@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sp_web/screens/approve_screen.dart';
 import 'package:sp_web/screens/login_screen.dart';
 import 'package:sp_web/screens/positive_cases_screen.dart';
+import 'package:sp_web/screens/search_screen.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({ Key? key }) : super(key: key);
@@ -14,14 +15,14 @@ class Navbar extends StatefulWidget {
 class _NavbarState extends State<Navbar> {
   FirebaseAuth auth = FirebaseAuth.instance;
 
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   TextStyle selectedStyle = const TextStyle(color: Colors.white, decoration: TextDecoration.underline);
   TextStyle unselectedStyle = const TextStyle(color: Colors.white);
 
   static const List<Widget> _widgetOptions = <Widget>[
     PositiveCasesScreen(),
-    Text("1"),
+    SearchScreen(),
     ApproveScreen()
   ];
 
