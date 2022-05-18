@@ -12,10 +12,11 @@ class _SearchScreenState extends State<SearchScreen> {
   final nameController = TextEditingController();
 
   String queryText = "";
-  String queryContact = "";
 
   late Query<Map<String, dynamic>> querySearch;
-  late Query<Map<String, dynamic>> querySearchContact;
+
+  bool isVisible = false;
+  bool isButtonDisabled = false;
 
   List<String> vaccinationStatuses = [
     "Fully vaccinated with booster shot",
@@ -34,78 +35,62 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     querySearch = searchDatabase(queryText);
-    querySearchContact = searchCloseContacts(queryContact);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
+    return Column(
       children: [
-        Expanded(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 50),
-                child: TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    hintText: "Type name to search.",
-                    hintStyle: const TextStyle(
-                      fontSize: 14
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15)
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: Color(0xFF008999))
-                    )
-                  ),
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 50),
+          child: TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              hintText: "Type full name to search.",
+              hintStyle: const TextStyle(
+                fontSize: 14
               ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    queryText = nameController.text;
-                    querySearch = searchDatabase(queryText);
-                  });
-                },
-                child: const Text(
-                  "SEARCH",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold
-                    )
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25.0)
-                  ),
-                  primary: const Color(0xFF008999),
-                  onPrimary: Colors.white
-                ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15)
               ),
-              const Padding(padding: EdgeInsets.symmetric(vertical: 10)),
-              buildSearchStream()
-            ],
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Color(0xFF008999))
+              )
+            ),
           ),
         ),
-        Expanded(
-          child: Column(
-            children: [
-              const Padding(padding: EdgeInsets.all(20)),
-              const Text(
-                "Close contacts within last 2 days",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold
-                )
-              ),
-              const Padding(padding: EdgeInsets.symmetric(vertical: 10)),
-              buildContactStream()
-            ],
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              queryText = nameController.text;
+              querySearch = searchDatabase(queryText);
+            });
+          },
+          child: const Text(
+            "SEARCH",
+            style: TextStyle(
+                fontWeight: FontWeight.bold
+              )
           ),
-        )
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25.0)
+            ),
+            primary: const Color(0xFF008999),
+            onPrimary: Colors.white
+          ),
+        ),
+        const Padding(padding: EdgeInsets.symmetric(vertical: 10)),
+        Visibility(
+          visible: isVisible,
+          child: const Text(
+            "Classifying close contacts...",
+            style: TextStyle(fontStyle: FontStyle.italic)
+          )
+        ),
+        const Padding(padding: EdgeInsets.only(bottom: 8)),
+        buildSearchStream()
       ],
     );
   }
@@ -128,6 +113,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   findCloseContacts(String id) async {
+    setState(() {
+      isVisible = true;
+    });
+
     final estabs = [];
     final estabsWithUser = [];
     final closeContacts = [];
@@ -157,9 +146,10 @@ class _SearchScreenState extends State<SearchScreen> {
         .where('timestamp', isLessThan: start)
         .where('timestamp', isGreaterThan: end)
         .get()
-        .then((value) {
+        .then((value) async {
           for (var element in value.docs) {
-            if(element.data()['userId'] != estab['userId'] && element.data()['establishmentId'] == estab['establishmentId']) closeContacts.add(element.data());
+            bool result = await isPositive(element.data()['userId']);
+            if(element.data()['userId'] != estab['userId'] && element.data()['establishmentId'] == estab['establishmentId'] && !result) closeContacts.add(element.data());
           }
         });
     }
@@ -168,38 +158,29 @@ class _SearchScreenState extends State<SearchScreen> {
       filteredCloseContacts.add(user['userId']);
     }
 
-    print(filteredCloseContacts);
+    for(var user in filteredCloseContacts) {
+      updateCloseContact(user);
+    }
+
+    setState(() {
+      isVisible = false;
+    });
   }
-  
-  searchCloseContacts(String id) {
-    DateTime now = DateTime.now();
-    DateTime start = DateTime(now.year, now.month, now.day, 0, 0);
-    DateTime end = DateTime(now.year, now.month, now.day-2, 0, 0);
 
-    findCloseContacts(id);
+  Future<bool> isPositive(String id) async {
+    bool isPositive = false;
 
-    Query timeQuery = FirebaseFirestore.instance
-      .collection('logs')
-      .where(
-        'timestamp', isLessThan: start
-      )
-      .where(
-        'timestamp', isGreaterThan: end
-      );
+    await FirebaseFirestore.instance
+      .collection('users')
+      .doc(id)
+      .get()
+      .then((value) {
+        if (value.get('covidStatus') == 1) {
+          isPositive = true;
+        }
+      });
 
-    return timeQuery;
-
-    // return timeQuery.where(
-    //   'userId', isEqualTo: id
-    // );   
-    // return FirebaseFirestore.instance
-    //   .collection('logs')
-    //   .where(
-    //     'timestamp', isLessThanOrEqualTo: start
-    //   )
-    //   .where(
-    //     'timestamp', isGreaterThanOrEqualTo: end
-    //   );
+    return isPositive;
   }
 
   updateCloseContact(String id) async {
@@ -223,7 +204,7 @@ class _SearchScreenState extends State<SearchScreen> {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (BuildContext context, int index) {
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                margin: const EdgeInsets.symmetric(horizontal: 200),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black)
@@ -246,78 +227,16 @@ class _SearchScreenState extends State<SearchScreen> {
                     const Padding(padding: EdgeInsets.symmetric(vertical: 8)),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: isButtonDisabled ? null : () {
                           updateCovidStatus(snapshot.data!.docs[index].id);
+                          findCloseContacts(snapshot.data!.docs[index].id);
                           setState(() {
-                            queryContact = snapshot.data!.docs[index].id;
-                            querySearchContact = searchCloseContacts(queryContact);
+                            isButtonDisabled = true;
                           });
                         },
-                        child: const Text(
-                          "CLASSIFY AS COVID-19 POSITIVE",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold
-                            )
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0)
-                          ),
-                          primary: const Color(0xFFFF0000),
-                          onPrimary: Colors.white
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              );
-            }
-          );
-        }
-
-        return const CircularProgressIndicator();
-      },
-    );
-  }
-
-  Widget buildContactStream() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: querySearchContact.snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if(snapshot.hasData) {
-          if(snapshot.data!.docs.isEmpty) return const Text("No close contacts.");
-
-          return ListView.builder(
-            shrinkWrap: true,
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black)
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "userId: " + snapshot.data!.docs[index]["userId"]
-                    ),
-                    Text(
-                      "establishmentId: " + snapshot.data!.docs[index]["establishmentId"]
-                    ),
-                    Text(
-                      "timestamp: " + snapshot.data!.docs[index]["timestamp"].toString()
-                    ),
-                    const Padding(padding: EdgeInsets.symmetric(vertical: 8)),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          updateCovidStatus(snapshot.data!.docs[index].id);
-                        },
-                        child: const Text(
-                          "CLASSIFY AS COVID-19 POSITIVE",
-                          style: TextStyle(
+                        child: Text(
+                          isButtonDisabled ? "ALREADY CLASSIFIED" : "CLASSIFY AS COVID-19 POSITIVE",
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold
                             )
                         ),

@@ -15,7 +15,7 @@ class Navbar extends StatefulWidget {
 class _NavbarState extends State<Navbar> {
   FirebaseAuth auth = FirebaseAuth.instance;
 
-  int _selectedIndex = 1;
+  int _selectedIndex = 0;
 
   TextStyle selectedStyle = const TextStyle(color: Colors.white, decoration: TextDecoration.underline);
   TextStyle unselectedStyle = const TextStyle(color: Colors.white);

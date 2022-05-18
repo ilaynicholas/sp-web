@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sp_web/screens/login_screen.dart';
-import 'package:sp_web/screens/navbar.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -28,7 +27,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity
       ),
       debugShowCheckedModeBanner: false,
-      home: const Navbar()
+      home: const LoginScreen()
     );
   }
 }
