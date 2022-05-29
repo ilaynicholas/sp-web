@@ -42,15 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
             Row(
               children: [
                 const Spacer(),
-                Container(
-                  width: 150,
-                  height: 150,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF008999),
-                    shape: BoxShape.circle
-                  )
-                ),
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 10.0)),
                 Column(
                   children: const [
                     Text(

@@ -40,17 +40,6 @@ class _NavbarState extends State<Navbar> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF00CDA6),
         automaticallyImplyLeading: false,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: const BoxDecoration(
-              color: Color(0xFF008999),
-              shape: BoxShape.circle
-            )
-          ),
-        ),
         centerTitle: true,
         title: Row(
           mainAxisSize: MainAxisSize.min,
