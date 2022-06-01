@@ -122,13 +122,13 @@ class _SearchScreenState extends State<SearchScreen> {
     final closeContacts = [];
     final filteredCloseContacts = [];
     DateTime now = DateTime.now();
-    DateTime start = DateTime(now.year, now.month, now.day, 0, 0);
+    DateTime start = DateTime(now.year, now.month, now.day, now.hour, now.minute);
     DateTime end = DateTime(now.year, now.month, now.day-2, 0, 0);
 
     await FirebaseFirestore.instance
       .collection('logs')
-      .where('timestamp', isLessThan: start)
-      .where('timestamp', isGreaterThan: end)
+      .where('timestamp', isLessThanOrEqualTo: start)
+      .where('timestamp', isGreaterThanOrEqualTo: end)
       .get()
       .then((value) {
         for (var element in value.docs) {
