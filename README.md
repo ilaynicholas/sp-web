@@ -1,16 +1,15 @@
-# sp_web
+# GapanTrax - Administrator
 
-A new Flutter project.
+A digital contact tracing system that utilizes QR code technology. This repository is for the administrator-side of the application.
 
-## Getting Started
+**Tech Stack:**
+- Dart
+- Flutter (framework)
+- Firebase (backend)
+- Cloud Firestore (database)
 
-This project is a starting point for a Flutter application.
+**Advisee:** Elijah Nicholas C. Isungga
 
-A few resources to get you started if this is your first Flutter project:
+**Adviser**: Concepcion L. Khan
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+In partial fulfillment of the requirements for the Degree of Bachelor of Science in Computer Science. 2022.
